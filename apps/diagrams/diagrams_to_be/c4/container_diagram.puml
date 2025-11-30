@@ -1,0 +1,30 @@
+@startuml
+!include <C4/C4_Context.puml>
+!include <C4/C4_Container.puml>
+
+Person(user, "Пользователь", "Подключает устройства, настраивает сценарии, просматривает телеметрию")
+
+Container(webApp, "Веб-приложение", "UI для взаимодействия с умным домом")
+Container(deviceManagement, "Device Management Service", "Управление устройствами, регистрация, статусы")
+Container(scenarioManagement, "Scenario Management Service", "CRUD сценариев работы устройств")
+Container(entitiesDb, "Main Database", "Хранение устройств и сценариев")
+System_Ext(device, "Устройство умного дома", "Лампы, автоматические ворота, отопление и проч.")
+Container(telemetryDataStorage, "Telemetry Service", "Прием телеметрии и ее сохранение")
+Container(triggerEngine, "Trigger Engine", "Оценка условий сценариев на основе телеметрии")
+Container(eventProcessor, "Event Processor", "Запись событий о запуске действий устройств")
+Container(taskStartWorker, "Device Command Worker", "Чтение событий и старт задач на устройствах")
+
+Rel(user, webApp, "Использует")
+Rel(webApp, deviceManagement, "Управление устройствами", REST API)
+Rel(webApp, scenarioManagement, "Управление сценариями", REST API)
+Rel(deviceManagement, entitiesDb, "CRUD устройств")
+Rel(scenarioManagement, entitiesDb, "CRUD сценариев")
+Rel(device, telemetryDataStorage, "Отправляет телеметрию")
+Rel(telemetryDataStorage, eventProcessor, "Публикует события телеметрии", topic 'device_telemetry_data')
+Rel(eventProcessor, triggerEngine, "Получает данные телеметрии", topic 'device_telemetry_data')
+Rel(triggerEngine, entitiesDb, "Каждые 5 мин. запрашивает сценарии, параметры устройств", SQL)
+Rel(triggerEngine, eventProcessor, "Публикует события запуска действий", topic 'device_tasks')
+Rel(eventProcessor, taskStartWorker, "Передает задачи воркерам", topic 'device_tasks')
+Rel(taskStartWorker, device, "Отправляет команды устройству", "HTTP/gRPC")
+
+@enduml

@@ -1,0 +1,76 @@
+@startuml
+
+actor User
+participant "Web application" as webApp
+participant "Backend Application" as app
+participant "Database" as db
+
+
+activate User
+User -> webApp: Получить список доступных устройств
+activate webApp
+webApp -> app: Запрос на получение списка устройств пользователя (user_id)
+deactivate webApp
+
+activate app
+app -> db: Получить список устройств пользователя
+deactivate app
+
+activate db
+db -> db: Поиск устройств
+db --> app: Список устройств
+deactivate db
+
+activate app
+app --> webApp: Список найденных устройств
+deactivate app
+
+activate webApp
+webApp --> User: Отобразить список устройств
+deactivate webApp
+
+User -> webApp: Выбрать устройство и нажать «Создать сценарий»
+activate webApp
+webApp -> app: Получить список действий устройства (device_id, device_type)
+deactivate webApp
+
+activate app
+app -> db: Получить доступные действия (таблица device_action)
+deactivate app
+
+activate db
+db --> app: Список доступных действий
+deactivate db
+
+activate app
+app --> webApp: Вернуть список действий
+deactivate app
+
+activate webApp
+webApp --> User: Отобразить список доступных действий
+deactivate webApp
+
+User -> webApp: Выбрать действие для устройства
+activate webApp
+webApp -> app: Создать сценарий (condition, device_id, action_id)
+deactivate webApp
+
+activate app
+app -> db: Создать запись нового сценария
+deactivate app
+
+activate db
+db -> db: INSERT в таблицу Scenario
+db --> app: ID созданной записи
+deactivate db
+
+activate app
+app --> webApp: Возврат созданной сущности
+deactivate app
+
+activate webApp
+webApp --> User: Отобразить данные сценария
+deactivate webApp
+deactivate User
+
+@enduml

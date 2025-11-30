@@ -1,0 +1,8 @@
+@startuml
+
+participant "Устройство" as device
+participant "Backend Application" as app
+participant "Frontend Appication" as webApp
+
+
+@enduml

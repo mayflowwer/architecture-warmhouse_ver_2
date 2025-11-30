@@ -1,0 +1,31 @@
+@startuml heatingManagementSequence
+
+actor User
+participant "Web Application" as webApp
+participant "Backend Application" as app
+participant "Relay" as relay
+participant "Database" as db
+
+activate User
+User -> webApp: Включить/выключить отопление в доме
+activate webApp
+webApp -> app: Отправить запрос
+activate app
+app -> relay: Установить подключение
+activate relay
+relay --> app: Подключение установлено
+app -> relay: Отправить команду включения отопления
+relay -> relay: Включить питание отопительного прибора
+relay --> app: Питание включено
+deactivate relay
+app -> db : Сохранить состояние прибора (Включено)
+activate db
+db --> app: Состояние сохранено
+deactivate db
+app --> webApp: Ответ (запрос выполнен)
+deactivate app
+webApp --> User: Отопление включено
+deactivate webApp
+deactivate User
+
+@enduml

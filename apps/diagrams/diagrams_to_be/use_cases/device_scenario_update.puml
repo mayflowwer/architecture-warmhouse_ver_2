@@ -1,0 +1,51 @@
+@startuml
+actor User
+participant "Web application" as webApp
+participant "Backend Application" as app
+participant "Database" as db
+
+User -> webApp: Выбрать сценарий для редактирования
+activate webApp
+webApp -> app: Запрос данных сценария (scenario_id)
+deactivate webApp
+
+activate app
+app -> db: Получить запись сценария
+deactivate app
+
+activate db
+db -> db: Поиск записи сценария
+db --> app: Данные сценария
+deactivate db
+
+activate app
+app --> webApp: Вернуть данные сценария
+deactivate app
+
+activate webApp
+webApp --> User: Отобразить данные сценария
+deactivate webApp
+
+User -> webApp: Изменить условие / действие / устройство
+activate webApp
+webApp -> app: Отправить обновлённые данные (scenario_id, new_condition, new_action_id)
+deactivate webApp
+
+activate app
+app -> db: Обновить запись сценария
+deactivate app
+
+activate db
+db -> db: UPDATE в таблице Scenario
+db --> app: Подтверждение обновления
+deactivate db
+
+activate app
+app --> webApp: Вернуть обновлённый сценарий
+deactivate app
+
+activate webApp
+webApp --> User: Отобразить обновлённый сценарий
+deactivate webApp
+
+@enduml

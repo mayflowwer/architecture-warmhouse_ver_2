@@ -1,0 +1,71 @@
+@startuml
+
+actor User
+participant "Device" as device
+participant "Web application" as webApp
+participant "Backend application" as app
+participant "Gateway Hub" as hub
+participant "Database" as db
+
+User -> device: Включить режим сопряжения
+activate device
+device -> device: Открыть временную точку доступа
+device --> User: Режим сопряжения включён
+
+User -> webApp: Подключить новое устройство
+activate webApp
+webApp -> app: Подключить новое устройство
+deactivate webApp
+
+activate app
+app -> hub: Включить режим поиска устройств
+deactivate app
+
+activate hub
+hub -> hub: Включить режим поиска
+hub --> app: Режим поиска включён
+
+activate app
+app --> webApp: Режим поиска включён
+deactivate app
+
+activate webApp
+webApp --> User: Отобразить прогрес поиска устройств
+deactivate webApp
+
+loop Поиск устройств
+    alt Устройство найдено
+        hub -> device: Отправить запрос на соединение
+
+        activate device
+        device --> hub: Соединение установлено
+        deactivate device
+
+        hub --> app: Соединение установлено, параметры устройства
+
+        activate app
+        app -> app: Зарегистрировать новое устройство
+        app -> db: Создать запись устройства
+        deactivate app
+
+        activate db
+        db -> db: Создать запись устройства
+        db --> app: ID устройства
+        deactivate db
+
+        activate app
+        app --> webApp: Устройство добавлено
+        deactivate app
+
+        activate webApp
+        webApp --> User: Устройство подключено
+        deactivate webApp
+
+    else Устройство не найдено / timeout
+        hub --> app: Отправить сообщение, что устройство не найдено
+    end
+end
+deactivate hub
+deactivate device
+
+@enduml

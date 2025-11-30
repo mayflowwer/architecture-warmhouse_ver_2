@@ -1,0 +1,38 @@
+@startuml
+!include <C4/C4_Context.puml>
+!include <C4/C4_Container.puml>
+
+System_Boundary(UserManagement, "Domain: UserManagement"){
+    Container(UserRegistration, "UserRegistration", "")
+    Container(UserAuthentication, "UserAuthentication", "")
+    Container(UserAuthorisation, "UserAuthorisation", "")
+    Container(UserProfileManagement, "UserProfileManagement", "")
+}
+System_Boundary(DeviceManagement, "Domain: DeviceManagement"){
+    Container(DeviceRegistration, "Context: DeviceRegistration", "")
+    Container(DeviceCheck, "DeviceCheck", "")
+    Container(DeviceDeactivation, "DeviceDeactivation", "")
+}
+System_Boundary(ScenarioManagement, "Domain: ScenarioManagement"){
+    Container(ScenarioCreating, "ScenarioCreating", "")
+    Container(ScenarioCreating, "ScenarioPublishing", "")
+    Container(ScenarioUpdating, "ScenarioUpdating", "")
+    Container(ScenarioDeleting, "ScenarioDeleting", "")
+}
+System_Boundary(TaskManagement, "Domain: Task Management"){
+    Container(TaskStart, "Context: Запуск выполнения команды устройством")
+    Container(TasTelemetryDataStreaming, "Context: Стриминг прогресса выполнения задачи устройством")
+
+}
+System_Boundary(TelemetryRetrieving, "Domain: TelemetryRetrieving"){
+    Container(TelemetryReceiving, "Context: Получение данных телеметрии")
+}
+
+Rel(DeviceRegistration, DeviceCheck, "проверяет доступность устройства") 
+Rel(DeviceRegistration, DeviceDeactivation, "передает устройство для ")
+Rel(UserAuthorisation, DeviceRegistration, "подключает новое устройство")
+Rel(DeviceRegistration, ScenarioCreating, "передает устройство для создания сценария")
+Rel(DeviceRegistration, TaskStart, "передает сценарий для выполнения")
+
+
+@enduml

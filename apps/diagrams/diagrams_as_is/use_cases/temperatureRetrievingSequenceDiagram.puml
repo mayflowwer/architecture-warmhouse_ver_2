@@ -1,0 +1,26 @@
+@startuml heatingManagementSequence
+
+actor User
+participant "Web Application" as webApp
+participant "Backend Application" as app
+participant "Sensor" as sensor
+participant "Database" as db
+
+activate User
+User -> webApp: Получить температуру в доме
+activate webApp
+webApp -> app: Отправить запрос на получение температуры в доме пользователя(user_id, house_id)
+activate app
+app -> sensor: Установить подключение
+activate sensor
+sensor --> app: Подключение установлено
+app -> sensor: Отправить запрос получения температуры в доме пользователя(user_id, house_id)
+sensor --> app: Значение температуры
+deactivate sensor
+app --> webApp: Ответ (значение температуры)
+deactivate app
+webApp --> User: Отображение данных
+deactivate webApp
+deactivate User
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml container_diagram
+!include <C4/C4_Context.puml>
+!include <C4/C4_Container.puml>
+
+title AS IS Container diagram for SmartHome System
+
+Person(user, "User", "Uses the SmartHome system to manage house heating and view current temperature")
+System_Boundary(system, "Smart Home System") {
+    Container(web_app, "Web application", "Provides user interface to receive data")
+    Container(app, "Backend Application", "Golang", "Provides functions to manage house's heating system and get house's temperature data")
+    Container(db, "Database", "Postgres", "Stores houses data")
+}
+
+System_Ext(controller, "SmartHome Controller", "Physical device installed in the user's house")
+System_Ext(switch, "SmartHome Switcher", "Turns on/off heating")
+System_Ext(sensor, "SmartHome Sensor", "Measures and transmits temperature")
+
+
+Rel(user, web_app, "requests SmartHome system")
+Rel(web_app, app, "Sends API calls \n[HTTP sync]")
+Rel(app, db, "Retrieves and saves house's current settings")
+Rel(app, controller, "Sends commands to turn on/off heating")
+Rel(controller, switch, "Turns on/off heating")
+Rel(sensor, controller, "Sends sensor's current temperature")
+
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+actor User
+participant "Web application" as webApp
+participant "Backend Application" as app
+participant "Database" as db
+
+User -> webApp: Выбрать сценарий для удаления
+activate webApp
+webApp -> app: Отправить запрос на удаление (scenario_id)
+deactivate webApp
+
+activate app
+app -> db: Удалить запись сценария
+deactivate app
+
+activate db
+db -> db: DELETE из таблицы Scenario
+db --> app: Подтверждение удаления
+deactivate db
+
+activate app
+app --> webApp: Подтвердить удаление
+deactivate app
+
+activate webApp
+webApp --> User: Показать уведомление "Сценарий удалён"
+deactivate webApp
+
+@enduml

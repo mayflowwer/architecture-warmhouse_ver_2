@@ -1,0 +1,24 @@
+@startuml sundomains_containers_diagram
+!include <C4/C4_Container.puml>
+!include <C4/C4_Component.puml>
+
+System_Boundary(equipmentManagementSundomain, "Equipment management", "Подключение и демонтаж оборудования на территории дома"){
+    Component(equipmentInstallmentContext, "Установка оборудования в доме", "Выезд специалиста на дом и установка оборудования")
+    Component(equipmentDeinstallmentContext, "Демонтаж оборудования из дома", "Выезд специалиста на дом и демонтаж оборудования")
+} 
+System_Boundary(deviceManagementSundomain, "Управление девайсами пользователем", "Подключение и удаление оборудования к аккаунту пользователя"){
+    Component(deviceRegistrationContext, "Регистрация(добавление) устройства в аккаунте пользователя")
+    Component(deviceDeletingContext, "Удаление устройства из аккаунта пользователя")  
+}
+System_Boundary(functionManagementSundomain, "Управление функциями Умного дома пользователем", ""){
+    Component(heatingManagementContext, "Управление отоплением пользователем")
+    Component(temperatureRetrievingContext, "Получение температуры пользователем")
+} 
+System_Boundary(userManagementSundomain, "Управление пользователями", ""){
+    Component(userRegistrationContext, "Регистрация аккаунта")
+    Component(userAuthentication, "Аутентификаия аккаунта")
+    Component(userAuthorisation, "Авторизация аккаунта")
+    Component(userProfileManagementContext, "Управление профилем аккаунта")
+} 
+
+@enduml

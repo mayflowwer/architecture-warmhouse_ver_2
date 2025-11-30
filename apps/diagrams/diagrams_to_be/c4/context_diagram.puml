@@ -1,0 +1,9 @@
+@startuml
+!include <C4/C4_Context.puml>
+!include <C4/C4_Container.puml>
+
+title TO BE Context diagram for SmartHome System
+
+Person(user, "User", "Uses the SmartHome system to manage home heating and view current temperature.")
+
+@enduml
