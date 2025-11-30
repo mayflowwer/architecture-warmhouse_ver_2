@@ -1,0 +1,184 @@
+asyncapi: '2.6.0'
+info:
+  title: SmartHome Async Messaging API
+  version: '1.0.0'
+  description: >
+    Асинхронная коммуникация между сервисами SmartHome:
+    - Scenarios API публикует события о сценариях
+    - Telemetry Listener публикует телеметрию устройств
+    - Trigger Engine вычитывает события и публикует задачи
+    - Task Workers вычитывают задачи и отправляют команды устройствам
+
+defaultContentType: application/json
+
+servers:
+  production:
+    url: kafka:9092
+    protocol: kafka
+    description: Kafka cluster
+
+channels:
+  scenarios.events:
+    description: >
+      События жизненного цикла сценариев: создание, обновление, удаление.
+    publish:
+      summary: Scenarios API публикует изменения сценариев
+      message:
+        $ref: '#/components/messages/ScenarioEvent'
+    subscribe:
+      summary: Trigger Engine получает обновления сценариев
+      message:
+        $ref: '#/components/messages/ScenarioEvent'
+
+  telemetryEvents.{device_type_id}.{event_type}:
+    description: >
+      События телеметрии, публикуемые устройствами.
+      Каждое устройство создаёт события в свой топик по типу девайса
+      и типу события.
+    parameters:
+      device_type_id:
+        description: Тип устройства (light, thermostat, lock, gate)
+        schema:
+          type: string
+      event_type:
+        description: Подтип телеметрии (temperature, state, status)
+        schema:
+          type: string
+    publish:
+      summary: Telemetry Listener публикует события телеметрии
+      message:
+        $ref: '#/components/messages/TelemetryEvent'
+    subscribe:
+      summary: Trigger Engine получает телеметрию и проверяет сценарии
+      message:
+        $ref: '#/components/messages/TelemetryEvent'
+  scenario.tasks.{device_type_id}:
+    description: >
+      Команды, которые TriggerEngine генерирует по результатам
+      выполнения триггеров. Воркеры читают только свои deviceType.
+    parameters:
+      device_type_id:
+        description: Тип устройства, для которого предназначена команда
+        schema:
+          type: string
+    publish:
+      summary: TriggerEngine публикует команду
+      message:
+        $ref: '#/components/messages/ScenarioTask'
+    subscribe:
+      summary: Task Worker получает команду и управляет устройством
+      message:
+        $ref: '#/components/messages/ScenarioTask'
+
+components:
+  messages:
+    ScenarioEvent:
+      name: ScenarioEvent
+      summary: Событие жизненного цикла сценария
+      payload:
+        $ref: '#/components/schemas/ScenarioEventPayload'
+
+    TelemetryEvent:
+      name: TelemetryEvent
+      summary: Событие телеметрии устройства
+      payload:
+        $ref: '#/components/schemas/TelemetryEventPayload'
+
+    ScenarioTask:
+      name: ScenarioTask
+      summary: Задача, опубликованная TriggerEngine
+      payload:
+        $ref: '#/components/schemas/ScenarioTaskPayload'
+  schemas:
+    ScenarioEventPayload:
+      type: object
+      required:
+        - event_id
+        - scenario_id
+        - device_id
+        - user_id
+        - event_type
+        - created_at
+      properties:
+        event_id:
+          type: string
+          format: uuid
+          description: Уникальный ID события
+        scenario_id:
+          type: string
+          format: uuid
+        device_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        event_type:
+          type: string
+          enum: [created, updated, deleted]
+        created_at:
+          type: string
+          format: date-time
+        payload:
+          type: object
+          description: Описание сценария (условия/действия)
+
+    TelemetryEventPayload:
+      type: object
+      required:
+        - event_id
+        - device_id
+        - device_type_id
+        - event_type
+        - created_at
+        - payload
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        device_id:
+          type: string
+          format: uuid
+        device_type_id:
+          type: string
+          description: Тип устройства
+        event_type:
+          type: string
+          description: Тип телеметрии
+        created_at:
+          type: string
+          format: date-time
+        payload:
+          type: object
+          description: Телеметрические данные
+          example:
+            temperature: 22.5
+            humidity: 40
+            state: "on"
+
+    ScenarioTaskPayload:
+      type: object
+      required:
+        - task_id
+        - device_id
+        - device_type_id
+        - created_at
+        - command
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        device_id:
+          type: string
+          format: uuid
+        device_type_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        command:
+          type: object
+          description: Команда устройству (в зависимости от типа)
+          example:
+            action: "set_state"
+            state: "on"

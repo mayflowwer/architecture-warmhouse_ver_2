@@ -1,0 +1,251 @@
+openapi: 3.0.4
+info:
+  title: SmartHome Device API
+  version: "1.0.0"
+
+servers:
+  - url: http://smarthome/api/v1
+
+tags:
+  - name: device
+
+paths:
+
+  /devices:
+    post:
+      tags:
+        - device
+      summary: Create device
+      description: Creates new device for user's house.
+      operationId: createDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCreate'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Unexpected error
+        # '500':
+        #   description: Server internal error
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    get:
+      summary: Get devices by userId
+      description: Returns list of devices for a specific user
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          description: ID of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of devices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+        '400':
+          description: Invalid query parameter
+        '500':
+          description: Server internal error
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /devices/{deviceId}:
+    get:
+      tags:
+        - device
+      summary: Returns device by deviceId
+      operationId: getDeviceById
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: Device not found.
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    patch:
+      tags:
+        - device
+      summary: Update firmware or status of device
+      description: Updates firmware version or device status.
+      operationId: patchDevice
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevicePatch'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: Device not found.
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - device
+      summary: Delete device from user's house devices list.
+      description: Delete device from user's house devices list.
+      operationId: deleteDevice
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Device deleted.
+        '404':
+          description: Device not found.
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+
+    DeviceCreate:
+      type: object
+      required:
+        - model
+        - name
+        - serial_number
+        - mac_address
+        - manufacturer
+        - firmware
+      properties:
+        model:
+          type: string
+        name:
+          type: string
+        serial_number:
+          type: string
+        mac_address:
+          type: string
+          pattern: "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"
+        manufacturer:
+          type: string
+          description: Manufacturer name (e.g. Xiaomi, Tuya, Aqara)
+        firmware:
+          type: string
+          description: Firmware version string (e.g. "1.0.5")
+
+    DevicePatch:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - maintenance
+            - decommissioned
+          description: New device status
+        firmware:
+          type: string
+          description: New firmware version
+
+    Device:
+      type: object
+      required:
+        - id
+        - model
+        - name
+        - serial_number
+        - mac_address
+        - manufacturer
+        - firmware
+        - status
+      properties:
+        id:
+          type: integer
+          description: Autogenerated device ID
+        model:
+          type: string
+        name:
+          type: string
+        serial_number:
+          type: string
+        mac_address:
+          type: string
+          pattern: "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"
+        manufacturer:
+          type: string
+        firmware:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - maintenance
+            - decommissioned
+          description: Device status
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
